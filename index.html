@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Astro-Focus Log // Mission Control</title>
+    <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Source+Code+Pro:wght@400;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="terminal-buttons">
+                <span class="terminal-button close"></span>
+                <span class="terminal-button minimize"></span>
+                <span class="terminal-button expand"></span>
+            </div>
+            <div class="terminal-title">astro-focus-log.exe</div>
+        </div>
+        
+        <div class="terminal-body">
+            <div class="mission-control">
+                <h1 class="glow">ASTRO-FOCUS LOG // MISSION CONTROL</h1>
+                <div class="current-time-display">CURRENT TIME: <span id="current-time">--:--:--</span></div>
+                <div class="layout-grid">
+                    <div class="layout-main">
+                        <!-- Decryption Timer -->
+                        <div class="panel">
+                            <h2>// DECRYPTION PROTOCOL</h2>
+                            <div id="decryption-progress">
+                                <div class="focus-duration-control">
+                                    <label for="focus-duration-input">FOCUS DURATION (seconds)</label>
+                                    <input type="number" id="focus-duration-input" value="10" />
+                                    <div class="focus-preset-buttons">
+                                        <button type="button" class="btn btn-secondary focus-preset" data-focus-duration="900">15m</button>
+                                        <button type="button" class="btn btn-secondary focus-preset" data-focus-duration="1500">25m</button>
+                                        <button type="button" class="btn btn-secondary focus-preset" data-focus-duration="3000">50m</button>
+                                    </div>
+                                </div>
+                                <div class="progress-container">
+                                    <div class="progress-bar" id="progress-bar"></div>
+                                    <span id="progress-text">0%</span>
+                                </div>
+                                <div class="button-group">
+                                    <button id="initiate-btn" class="btn btn-primary">INITIATE DECRYPTION</button>
+                                    <button id="intrusion-btn" class="btn btn-danger">// INTRUSION DETECTED</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Live Decryption Stream -->
+                        <div class="panel">
+                            <h2>// LIVE DECRYPTION STREAM</h2>
+                            <div class="decryption-console-header">STREAM OUTPUT:</div>
+                            <div id="decryption-output" class="decryption-output"></div>
+                        </div>
+
+                        <!-- Focus-to-Universe Converter -->
+                        <div class="panel">
+                            <h2>// DISTANCE EXPLORED (SIMULATED)</h2>
+                            <div id="distance-counter" class="distance-display">0</div>
+                            <div id="milestone-text" class="milestone-text">Launching from Earth's orbit...</div>
+                        </div>
+
+                        <!-- Mission Log -->
+                        <div class="panel log-panel">
+                            <h2>// MISSION LOG</h2>
+                            <div id="mission-log" class="log-entries">
+                                <div class="log-entry">> System initialized. Awaiting decryption sequence...</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="layout-side">
+                        <div class="panel telemetry-panel">
+                            <h2>// TELEMETRY</h2>
+                            <div class="telemetry-metric"><span class="label">TOTAL SESSIONS:</span> <span id="metric-total-sessions">0</span></div>
+                        </div>
+
+                        <div class="panel" id="session-history-panel">
+                            <h2>// SESSION HISTORY</h2>
+                            <div id="session-history" class="history-entries"></div>
+                        </div>
+
+                        <div class="panel todo-panel">
+                            <h2>// MISSION TODO</h2>
+                            <div class="todo-input-row">
+                                <input type="text" id="todo-input" placeholder="New mission task..." />
+                                <button type="button" class="btn btn-primary" id="todo-add-btn">ADD</button>
+                            </div>
+                            <ul id="todo-list" class="todo-list"></ul>
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Decryption Success Modal -->
+    <div id="success-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" data-target="success-modal">&times;</span>
+            <h2>// DECRYPTION COMPLETE</h2>
+            <p class="success-message">Decryption success, decryption code: <span id="success-code">---- ----</span></p>
+            <button id="success-modal-close" class="btn btn-primary">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- Intrusion Report Modal -->
+    <div id="intrusion-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" data-target="intrusion-modal">&times;</span>
+            <h2>// INTRUSION REPORT</h2>
+            <form id="intrusion-form">
+                <div class="form-group">
+                    <label for="timestamp">TIMESTAMP:</label>
+                    <input type="text" id="timestamp" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="source">SOURCE:</label>
+                    <select id="source" required>
+                        <option value="">Select source</option>
+                        <option value="PHONE">Mobile Device</option>
+                        <option value="SOCIAL">Social Media</option>
+                        <option value="EMAIL">Email Client</option>
+                        <option value="PEOPLE">People</option>
+                        <option value="THOUGHTS">Internal Thoughts</option>
+                        <option value="OTHER">Other</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="cause">ROOT CAUSE VARIABLE:</label>
+                    <input type="text" id="cause" placeholder="What triggered this intrusion?" required>
+                </div>
+                <button type="submit" class="btn btn-danger">LOG INTRUSION</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
