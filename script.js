@@ -428,14 +428,16 @@ function init() {
 function startCurrentTimeClock() {
     if (!currentTimeDisplay) return;
     if (currentTimeInterval) {
-        clearInterval(currentTimeInterval);
+        clearTimeout(currentTimeInterval);
+        currentTimeInterval = null;
     }
     const tick = () => {
         const now = new Date();
         currentTimeDisplay.textContent = now.toLocaleTimeString();
+        const delay = Math.max(0, 1000 - now.getMilliseconds());
+        currentTimeInterval = setTimeout(tick, delay || 1000);
     };
     tick();
-    currentTimeInterval = setInterval(tick, 1000);
 }
 
 // Update the UI based on current state
