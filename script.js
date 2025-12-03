@@ -19,6 +19,8 @@ let focusPresetButtons;
 let successModal;
 let successCodeDisplay;
 let successModalCloseBtn;
+let ratingModal;
+let ratingForm;
 let todoInput;
 let todoAddBtn;
 let todoList;
@@ -46,6 +48,7 @@ let sessionStartTimestamp = null;
 let lastAmbientLogTimestamp = 0;
 let todoItems = [];
 const TODO_STORAGE_KEY = 'astroFocusTodos';
+let pendingSession = null;
 
 // Milestone thresholds in million kilometers
 const MILESTONES = [
@@ -336,6 +339,8 @@ function cacheDomElements() {
     successModal = document.getElementById('success-modal');
     successCodeDisplay = document.getElementById('success-code');
     successModalCloseBtn = document.getElementById('success-modal-close');
+    ratingModal = document.getElementById('rating-modal');
+    ratingForm = document.getElementById('rating-form');
     todoInput = document.getElementById('todo-input');
     todoAddBtn = document.getElementById('todo-add-btn');
     todoList = document.getElementById('todo-list');
@@ -376,6 +381,10 @@ function init() {
         btn.addEventListener('click', () => {
             const targetId = btn.dataset.target;
             const modalEl = targetId ? document.getElementById(targetId) : null;
+            if (targetId === 'rating-modal' && pendingSession) {
+                addLogEntry('Mission rating required before completion.', 'warning');
+                return;
+            }
             if (modalEl) {
                 modalEl.style.display = 'none';
             }
@@ -392,6 +401,10 @@ function init() {
         successModalCloseBtn.addEventListener('click', () => {
             if (successModal) successModal.style.display = 'none';
         });
+    }
+
+    if (ratingForm) {
+        ratingForm.addEventListener('submit', handleRatingSubmit);
     }
 
     // Intrusion form submission
@@ -467,6 +480,10 @@ function updateUI() {
 
 // Start the decryption timer
 function startDecryption() {
+    if (pendingSession) {
+        addLogEntry('Finalize the pending mission rating before initiating a new session.', 'warning');
+        return;
+    }
     if (isRunning) return;
 
     isRunning = true;
@@ -505,6 +522,11 @@ function getDistanceReward() {
     return (duration / BASE_DURATION) * BASE_DISTANCE_REWARD;
 }
 
+function getRatingMultiplier(ratingValue) {
+    const clamped = Math.min(5, Math.max(1, ratingValue));
+    return clamped / 3; // rating 3 keeps baseline distance, 5 amplifies reward
+}
+
 function completeDecryption() {
     if (timer) {
         clearInterval(timer);
@@ -514,18 +536,47 @@ function completeDecryption() {
     sessionStartTimestamp = null;
     stopDecryptionStream();
     const code = generateDecryptionCode();
-    addLogEntry(`Decryption success! Code: ${code}`, "success");
-    const distanceThisSession = getDistanceReward();
-    totalDistance += distanceThisSession;
-    totalSessions += 1;
-    checkMilestone(distanceThisSession);
-    recordSession(distanceThisSession);
+    const baseDistance = getDistanceReward();
+    pendingSession = { code, baseDistance };
+    addLogEntry('Session complete. Awaiting performance rating...', 'info');
     // Reset progress
     progress = 0;
-    if (initiateBtn) {
-        initiateBtn.disabled = false;
+    if (ratingModal && ratingForm) {
+        openRatingModal();
+    } else {
+        finalizeRatedSession(3);
     }
 
+    updateUI();
+}
+
+function openRatingModal() {
+    if (!ratingModal) return;
+    if (ratingForm) {
+        ratingForm.reset();
+    }
+    ratingModal.style.display = 'flex';
+}
+
+function handleRatingSubmit(e) {
+    e.preventDefault();
+    const formData = new FormData(ratingForm);
+    const selectedRating = Number(formData.get('session-rating')) || 3;
+    ratingModal.style.display = 'none';
+    finalizeRatedSession(selectedRating);
+}
+
+function finalizeRatedSession(ratingValue = 3) {
+    if (!pendingSession) return;
+    const multiplier = getRatingMultiplier(ratingValue);
+    const adjustedDistance = pendingSession.baseDistance * multiplier;
+    const { code } = pendingSession;
+    totalDistance += adjustedDistance;
+    totalSessions += 1;
+    addLogEntry(`Decryption success! Rating ${ratingValue}/5 yielded +${adjustedDistance.toFixed(2)} M km. Code: ${code}`, 'success');
+    checkMilestone(adjustedDistance);
+    recordSession(adjustedDistance);
+    pendingSession = null;
     updateUI();
     showSuccessModal(code);
 }
@@ -604,6 +655,17 @@ function logIntrusion(e) {
     progress = 0;
     isRunning = false;
     clearInterval(timer);
+    if (pendingSession) {
+        pendingSession = null;
+        if (ratingModal) {
+            ratingModal.style.display = 'none';
+        }
+    }
+    if (totalDistance > 0) {
+        const penalty = totalDistance * 0.1;
+        totalDistance = Math.max(0, totalDistance - penalty);
+        addLogEntry(`Security breach penalty applied: -${penalty.toFixed(2)} M km.`, 'warning');
+    }
     
     // Close modal and reset UI
     intrusionModal.style.display = 'none';

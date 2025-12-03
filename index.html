@@ -99,6 +99,39 @@
     </div>
 
     <!-- Decryption Success Modal -->
+    <div id="rating-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal" data-target="rating-modal">&times;</span>
+            <h2>// SESSION PERFORMANCE REVIEW</h2>
+            <p class="rating-message">Provide a mission rating (1 = minimal focus, 5 = stellar alignment). This impacts distance earned.</p>
+            <form id="rating-form">
+                <div class="rating-options">
+                    <label class="rating-option">
+                        <input type="radio" name="session-rating" value="1" required>
+                        <span>1</span>
+                    </label>
+                    <label class="rating-option">
+                        <input type="radio" name="session-rating" value="2">
+                        <span>2</span>
+                    </label>
+                    <label class="rating-option">
+                        <input type="radio" name="session-rating" value="3" checked>
+                        <span>3</span>
+                    </label>
+                    <label class="rating-option">
+                        <input type="radio" name="session-rating" value="4">
+                        <span>4</span>
+                    </label>
+                    <label class="rating-option">
+                        <input type="radio" name="session-rating" value="5">
+                        <span>5</span>
+                    </label>
+                </div>
+                <button type="submit" class="btn btn-primary">CONFIRM RATING</button>
+            </form>
+        </div>
+    </div>
+
     <div id="success-modal" class="modal">
         <div class="modal-content">
             <span class="close-modal" data-target="success-modal">&times;</span>
