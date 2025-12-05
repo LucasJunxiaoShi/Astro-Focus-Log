@@ -67,7 +67,12 @@ const MILESTONES = [
     { distance: 500, message: "Voyager 1 territory..." },
     { distance: 1000, message: "Entering the Oort Cloud..." },
     { distance: 2000, message: "Leaving the Solar System..." },
-    { distance: 4000, message: "Approaching Proxima Centauri..." }
+    { distance: 4000, message: "Approaching Proxima Centauri..." },
+    { distance: 8000, message: "Entering the Proxima Centauri system..." },
+    { distance: 12000, message: "Charting Alpha Centauri A & B..." },
+    { distance: 20000, message: "Piercing the Local Interstellar Cloud..." },
+    { distance: 40000, message: "Crossing deeper into the Orion Arm..." },
+    { distance: 100000, message: "Setting course toward the Galactic Center..." }
 ];
 
 function handleTodoSubmit() {
