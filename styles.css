@@ -136,6 +136,24 @@ body::before {
     margin-top: 0.5rem;
 }
 
+.mission-name-display {
+    margin-top: 1rem;
+    padding: 10px 12px;
+    border: 1px solid var(--panel-border);
+    border-radius: 4px;
+    background: rgba(10, 14, 20, 0.6);
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    font-size: 0.95rem;
+}
+
+.mission-name-display .label {
+    color: var(--accent-yellow);
+    letter-spacing: 1px;
+}
+
 /* Typography */
 h1, h2, h3 {
     color: var(--accent-cyan);
@@ -258,6 +276,26 @@ p {
     gap: 10px;
     flex-wrap: wrap;
     margin-top: 15px;
+}
+
+.mission-modal-content {
+    max-width: 420px;
+}
+
+.mission-modal-copy {
+    color: var(--text-secondary);
+    margin-bottom: 1rem;
+}
+
+.mission-label {
+    letter-spacing: 1px;
+}
+
+.mission-modal-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 1.5rem;
+    justify-content: flex-end;
 }
 
 /* Distance Display */

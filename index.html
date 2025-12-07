@@ -38,6 +38,10 @@
                                         <button type="button" class="btn btn-secondary focus-preset" data-focus-duration="3000">50m</button>
                                     </div>
                                 </div>
+                                <div class="mission-name-display">
+                                    <span class="label">// MISSION NAME:</span>
+                                    <span id="mission-name-value">Awaiting assignment</span>
+                                </div>
                                 <div class="progress-container">
                                     <div class="progress-bar" id="progress-bar"></div>
                                     <span id="progress-text">0%</span>
@@ -138,6 +142,23 @@
             <h2>// DECRYPTION COMPLETE</h2>
             <p class="success-message">Decryption success, decryption code: <span id="success-code">---- ----</span></p>
             <button id="success-modal-close" class="btn btn-primary">CLOSE</button>
+        </div>
+    </div>
+
+    <!-- Mission Name Modal -->
+    <div id="mission-modal" class="modal">
+        <div class="modal-content mission-modal-content">
+            <span class="close-modal" data-target="mission-modal">&times;</span>
+            <h2>// DEFINE CURRENT MISSION</h2>
+            <p class="mission-modal-copy">Label this focus session so Mission Control can log it.</p>
+            <form id="mission-form">
+                <label for="mission-name-input" class="mission-label">MISSION NAME</label>
+                <input type="text" id="mission-name-input" placeholder="e.g. Math Homework" maxlength="60" required />
+                <div class="mission-modal-actions">
+                    <button type="button" class="btn btn-secondary" id="mission-cancel-btn">CANCEL</button>
+                    <button type="submit" class="btn btn-primary">LOCK IN</button>
+                </div>
+            </form>
         </div>
     </div>
 

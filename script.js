@@ -24,6 +24,11 @@ let ratingForm;
 let todoInput;
 let todoAddBtn;
 let todoList;
+let missionModal;
+let missionForm;
+let missionNameInput;
+let missionCancelBtn;
+let missionNameValue;
 const STREAM_SNIPPETS = [
     "SCAN", "DECODE", "VECTOR", "DELTA", "QUANT", "OMEGA", "NOVA", "SIGMA",
     "PHASE", "FREQ", "ALIGN", "SHIFT", "BYPASS", "LOCK", "TRACE", "RANGE"
@@ -49,6 +54,7 @@ let lastAmbientLogTimestamp = 0;
 let todoItems = [];
 const TODO_STORAGE_KEY = 'astroFocusTodos';
 let pendingSession = null;
+let missionName = '';
 
 // Milestone thresholds in million kilometers
 const MILESTONES = [
@@ -349,6 +355,11 @@ function cacheDomElements() {
     todoInput = document.getElementById('todo-input');
     todoAddBtn = document.getElementById('todo-add-btn');
     todoList = document.getElementById('todo-list');
+    missionModal = document.getElementById('mission-modal');
+    missionForm = document.getElementById('mission-form');
+    missionNameInput = document.getElementById('mission-name-input');
+    missionCancelBtn = document.getElementById('mission-cancel-btn');
+    missionNameValue = document.getElementById('mission-name-value');
 }
 
 function updateTelemetry() {
@@ -364,7 +375,7 @@ function init() {
 
     // Set up event listeners
     if (initiateBtn) {
-        initiateBtn.addEventListener('click', startDecryption);
+        initiateBtn.addEventListener('click', handleInitiateClick);
     }
     if (intrusionBtn) {
         intrusionBtn.addEventListener('click', showIntrusionModal);
@@ -391,6 +402,10 @@ function init() {
                 return;
             }
             if (modalEl) {
+                if (modalEl === missionModal) {
+                    handleMissionCancel();
+                    return;
+                }
                 modalEl.style.display = 'none';
             }
         });
@@ -400,6 +415,7 @@ function init() {
     window.addEventListener('click', (e) => {
         if (e.target === intrusionModal) intrusionModal.style.display = 'none';
         if (e.target === successModal) successModal.style.display = 'none';
+        if (e.target === missionModal) handleMissionCancel();
     });
 
     if (successModalCloseBtn) {
@@ -410,6 +426,9 @@ function init() {
 
     if (ratingForm) {
         ratingForm.addEventListener('submit', handleRatingSubmit);
+    }
+    if (missionForm) {
+        missionForm.addEventListener('submit', handleMissionSubmit);
     }
 
     // Intrusion form submission
@@ -433,6 +452,10 @@ function init() {
         });
     }
 
+    if (missionCancelBtn) {
+        missionCancelBtn.addEventListener('click', handleMissionCancel);
+    }
+
     // Load saved state if available
     loadState();
     loadSessions();
@@ -440,7 +463,54 @@ function init() {
     purgeExpiredTodos();
     renderTodoList();
     startCurrentTimeClock();
+    updateMissionNameDisplay();
     updateUI();
+}
+
+function handleInitiateClick() {
+    if (pendingSession) {
+        addLogEntry('Finalize the pending mission rating before initiating a new session.', 'warning');
+        return;
+    }
+    if (isRunning) return;
+    openMissionModal();
+}
+
+function openMissionModal() {
+    if (!missionModal || !missionForm) return;
+    missionModal.style.display = 'flex';
+    const presetValue = missionName || '';
+    missionNameInput.value = presetValue;
+    missionNameInput.focus();
+}
+
+function handleMissionSubmit(e) {
+    e.preventDefault();
+    if (!missionNameInput) return;
+    const value = missionNameInput.value.trim();
+    if (!value) {
+        missionNameInput.focus();
+        return;
+    }
+    missionName = value;
+    updateMissionNameDisplay();
+    handleMissionCancel(false);
+    startDecryption();
+}
+
+function handleMissionCancel(resetValue = true) {
+    if (missionModal) {
+        missionModal.style.display = 'none';
+    }
+    if (resetValue && missionNameInput) {
+        missionNameInput.value = missionName || '';
+    }
+}
+
+function updateMissionNameDisplay() {
+    if (missionNameValue) {
+        missionNameValue.textContent = missionName || 'Awaiting assignment';
+    }
 }
 
 function startCurrentTimeClock() {
