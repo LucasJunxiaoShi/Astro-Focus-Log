@@ -372,7 +372,7 @@ function updateTelemetry() {
         metricTotalSessions.textContent = `Total Sessions: ${totalSessions}`;
     }
     if (metricStreak) {
-        metricStreak.textContent = `Current Streak: ${currentStreak} day${currentStreak !== 1 ? 's' : ''}`;
+        metricStreak.textContent = `${currentStreak} day${currentStreak !== 1 ? 's' : ''}`;
     }
 }
 
