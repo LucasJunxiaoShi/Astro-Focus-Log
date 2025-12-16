@@ -12,6 +12,7 @@ let intrusionForm;
 let timestampInput;
 let decryptionOutput;
 let metricTotalSessions;
+let metricStreak;
 let sessionHistoryContainer;
 let currentTimeDisplay;
 let focusDurationInput;
@@ -55,6 +56,9 @@ let todoItems = [];
 const TODO_STORAGE_KEY = 'astroFocusTodos';
 let pendingSession = null;
 let missionName = '';
+let currentStreak = 0;
+let lastSessionDate = null;
+const STREAK_STORAGE_KEY = 'astroFocusStreak';
 
 // Milestone thresholds in million kilometers
 const MILESTONES = [
@@ -343,6 +347,7 @@ function cacheDomElements() {
     timestampInput = document.getElementById('timestamp');
     decryptionOutput = document.getElementById('decryption-output');
     metricTotalSessions = document.getElementById('metric-total-sessions');
+    metricStreak = document.getElementById('metric-streak');
     sessionHistoryContainer = document.getElementById('session-history');
     currentTimeDisplay = document.getElementById('current-time');
     focusDurationInput = document.getElementById('focus-duration-input');
@@ -365,6 +370,9 @@ function cacheDomElements() {
 function updateTelemetry() {
     if (metricTotalSessions) {
         metricTotalSessions.textContent = `Total Sessions: ${totalSessions}`;
+    }
+    if (metricStreak) {
+        metricStreak.textContent = `Current Streak: ${currentStreak} day${currentStreak !== 1 ? 's' : ''}`;
     }
 }
 
@@ -459,6 +467,7 @@ function init() {
     // Load saved state if available
     loadState();
     loadSessions();
+    loadStreak();
     loadTodoItems();
     purgeExpiredTodos();
     renderTodoList();
@@ -648,6 +657,7 @@ function finalizeRatedSession(ratingValue = 3) {
     const { code } = pendingSession;
     totalDistance += adjustedDistance;
     totalSessions += 1;
+    updateStreak();
     addLogEntry(`Decryption success! Rating ${ratingValue}/5 yielded +${adjustedDistance.toFixed(2)} M km. Code: ${code}`, 'success');
     checkMilestone(adjustedDistance);
     recordSession(adjustedDistance);
@@ -702,6 +712,120 @@ function loadSessions() {
         renderSessionHistory();
     } catch (err) {
         console.error('Failed to load session data', err);
+    }
+}
+
+// Streak Management Functions
+function getDateString(date = new Date()) {
+    return date.toISOString().split('T')[0];
+}
+
+function checkStreak() {
+    const today = getDateString();
+    
+    if (!lastSessionDate) {
+        // No previous session, streak is 0
+        currentStreak = 0;
+        return;
+    }
+    
+    const lastDate = new Date(lastSessionDate);
+    const todayDate = new Date(today);
+    const daysDiff = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+    
+    if (daysDiff === 0) {
+        // Same day, keep current streak
+        return;
+    } else if (daysDiff === 1) {
+        // Consecutive day, increment streak
+        currentStreak += 1;
+        lastSessionDate = today;
+    } else {
+        // Streak broken, reset to 1 (today's session)
+        currentStreak = 1;
+        lastSessionDate = today;
+    }
+}
+
+function updateStreak() {
+    const today = getDateString();
+    const previousStreak = currentStreak;
+    
+    if (!lastSessionDate) {
+        // First session ever
+        currentStreak = 1;
+        lastSessionDate = today;
+        addLogEntry(`Streak initiated! Day 1 of your focus journey.`, 'success');
+    } else {
+        const lastDate = new Date(lastSessionDate);
+        const todayDate = new Date(today);
+        const daysDiff = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+        
+        if (daysDiff === 0) {
+            // Same day, don't increment but ensure streak is at least 1
+            if (currentStreak === 0) {
+                currentStreak = 1;
+            }
+        } else if (daysDiff === 1) {
+            // Consecutive day, increment streak
+            currentStreak += 1;
+            lastSessionDate = today;
+            if (currentStreak > previousStreak) {
+                addLogEntry(`Streak extended! Day ${currentStreak} of consecutive focus.`, 'success');
+            }
+        } else {
+            // Streak broken, reset to 1
+            currentStreak = 1;
+            lastSessionDate = today;
+            addLogEntry(`Streak reset. Starting fresh with day 1.`, 'warning');
+        }
+    }
+    
+    saveStreak();
+}
+
+function saveStreak() {
+    try {
+        const streakData = {
+            currentStreak,
+            lastSessionDate
+        };
+        localStorage.setItem(STREAK_STORAGE_KEY, JSON.stringify(streakData));
+    } catch (err) {
+        console.error('Failed to save streak data', err);
+    }
+}
+
+function loadStreak() {
+    try {
+        const raw = localStorage.getItem(STREAK_STORAGE_KEY);
+        if (!raw) {
+            currentStreak = 0;
+            lastSessionDate = null;
+            return;
+        }
+        const data = JSON.parse(raw);
+        currentStreak = data.currentStreak || 0;
+        lastSessionDate = data.lastSessionDate || null;
+        
+        // Check if streak should be reset (if last session was more than 1 day ago)
+        if (lastSessionDate) {
+            const today = getDateString();
+            const lastDate = new Date(lastSessionDate);
+            const todayDate = new Date(today);
+            const daysDiff = Math.floor((todayDate - lastDate) / (1000 * 60 * 60 * 24));
+            
+            if (daysDiff > 1) {
+                // Streak broken, reset
+                currentStreak = 0;
+                lastSessionDate = null;
+                saveStreak();
+            }
+        }
+    } catch (err) {
+        console.error('Failed to load streak data', err);
+        currentStreak = 0;
+        lastSessionDate = null;
     }
 }
 
