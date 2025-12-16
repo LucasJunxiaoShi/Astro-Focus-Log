@@ -404,6 +404,18 @@ p {
     color: var(--text-secondary);
 }
 
+.streak-metric {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid var(--panel-border);
+}
+
+.streak-value {
+    color: var(--accent-yellow);
+    font-weight: bold;
+    text-shadow: 0 0 8px rgba(255, 204, 102, 0.5);
+}
+
 .history-entries {
     max-height: 180px;
     overflow-y: auto;
