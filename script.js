@@ -556,8 +556,9 @@ function updateUI() {
     // Update estimated time display
     if (isRunning && estimatedTimeContainer && estimatedTimeDisplay) {
         const remainingSeconds = Math.max(0, duration - progress);
-        const remainingMinutes = Math.ceil(remainingSeconds / 60);
-        estimatedTimeDisplay.textContent = remainingMinutes;
+        const minutes = Math.floor(remainingSeconds / 60);
+        const seconds = Math.floor(remainingSeconds % 60);
+        estimatedTimeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
         estimatedTimeContainer.style.display = 'block';
     } else if (!isRunning && estimatedTimeContainer) {
         estimatedTimeContainer.style.display = 'none';

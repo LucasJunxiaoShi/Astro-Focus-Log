@@ -346,14 +346,7 @@ p {
     line-height: 1;
     margin: 20px 0;
     animation: pulse 2s infinite;
-}
-
-.estimated-time-unit {
-    font-size: 1.2rem;
-    color: var(--text-secondary);
-    letter-spacing: 1px;
-    margin-top: 10px;
-    text-transform: uppercase;
+    letter-spacing: 4px;
 }
 
 /* Mission Log */
@@ -646,14 +639,11 @@ select:focus {
     
     .estimated-time {
         font-size: 4rem;
+        letter-spacing: 2px;
     }
     
     .estimated-time-label {
         font-size: 0.85rem;
-    }
-    
-    .estimated-time-unit {
-        font-size: 1rem;
     }
     
     h1 {
