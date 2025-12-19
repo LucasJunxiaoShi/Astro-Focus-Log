@@ -317,6 +317,45 @@ p {
     min-height: 24px;
 }
 
+/* Estimated Time Display */
+.estimated-time-container {
+    text-align: center;
+    margin: 30px 0;
+    padding: 30px 20px;
+    background: rgba(10, 14, 20, 0.6);
+    border: 2px solid var(--accent-cyan);
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(92, 207, 230, 0.3);
+}
+
+.estimated-time-label {
+    font-size: 1rem;
+    color: var(--accent-cyan);
+    letter-spacing: 2px;
+    margin-bottom: 15px;
+    text-transform: uppercase;
+    opacity: 0.9;
+}
+
+.estimated-time {
+    font-size: 6rem;
+    font-weight: bold;
+    color: var(--accent-green);
+    text-shadow: 0 0 20px rgba(186, 230, 126, 0.6);
+    font-family: 'Source Code Pro', monospace;
+    line-height: 1;
+    margin: 20px 0;
+    animation: pulse 2s infinite;
+}
+
+.estimated-time-unit {
+    font-size: 1.2rem;
+    color: var(--text-secondary);
+    letter-spacing: 1px;
+    margin-top: 10px;
+    text-transform: uppercase;
+}
+
 /* Mission Log */
 .log-panel {
     max-height: 250px;
@@ -603,6 +642,18 @@ select:focus {
     
     .distance-display {
         font-size: 2.5rem;
+    }
+    
+    .estimated-time {
+        font-size: 4rem;
+    }
+    
+    .estimated-time-label {
+        font-size: 0.85rem;
+    }
+    
+    .estimated-time-unit {
+        font-size: 1rem;
     }
     
     h1 {

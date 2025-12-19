@@ -30,6 +30,8 @@ let missionForm;
 let missionNameInput;
 let missionCancelBtn;
 let missionNameValue;
+let estimatedTimeContainer;
+let estimatedTimeDisplay;
 const STREAM_SNIPPETS = [
     "SCAN", "DECODE", "VECTOR", "DELTA", "QUANT", "OMEGA", "NOVA", "SIGMA",
     "PHASE", "FREQ", "ALIGN", "SHIFT", "BYPASS", "LOCK", "TRACE", "RANGE"
@@ -365,6 +367,8 @@ function cacheDomElements() {
     missionNameInput = document.getElementById('mission-name-input');
     missionCancelBtn = document.getElementById('mission-cancel-btn');
     missionNameValue = document.getElementById('mission-name-value');
+    estimatedTimeContainer = document.getElementById('estimated-time-container');
+    estimatedTimeDisplay = document.getElementById('estimated-time');
 }
 
 function updateTelemetry() {
@@ -549,6 +553,16 @@ function updateUI() {
         progressText.textContent = `${Math.round(percentage)}%`;
     }
 
+    // Update estimated time display
+    if (isRunning && estimatedTimeContainer && estimatedTimeDisplay) {
+        const remainingSeconds = Math.max(0, duration - progress);
+        const remainingMinutes = Math.ceil(remainingSeconds / 60);
+        estimatedTimeDisplay.textContent = remainingMinutes;
+        estimatedTimeContainer.style.display = 'block';
+    } else if (!isRunning && estimatedTimeContainer) {
+        estimatedTimeContainer.style.display = 'none';
+    }
+
     // Update distance counter
     if (distanceCounter) {
         distanceCounter.textContent = `${totalDistance.toLocaleString()} Million Kilometers`;
@@ -625,6 +639,9 @@ function completeDecryption() {
     addLogEntry('Session complete. Awaiting performance rating...', 'info');
     // Reset progress
     progress = 0;
+    if (estimatedTimeContainer) {
+        estimatedTimeContainer.style.display = 'none';
+    }
     if (ratingModal && ratingForm) {
         openRatingModal();
     } else {
@@ -854,6 +871,9 @@ function logIntrusion(e) {
     progress = 0;
     isRunning = false;
     clearInterval(timer);
+    if (estimatedTimeContainer) {
+        estimatedTimeContainer.style.display = 'none';
+    }
     if (pendingSession) {
         pendingSession = null;
         if (ratingModal) {
