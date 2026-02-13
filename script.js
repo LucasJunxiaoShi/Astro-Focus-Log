@@ -483,6 +483,7 @@ function init() {
     startCurrentTimeClock();
     updateMissionNameDisplay();
     updateUI();
+    registerServiceWorker();
 }
 
 function handleInitiateClick() {
@@ -670,18 +671,39 @@ function showTimeUpNotification() {
     showTimeUpInPageToast();
     if (typeof Notification === 'undefined') return;
     if (Notification.permission !== 'granted') return;
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(function (reg) {
+            if (reg.active) {
+                reg.active.postMessage({ type: 'timeUp' });
+            } else {
+                showTimeUpNotificationPageFallback();
+            }
+        }).catch(function () {
+            showTimeUpNotificationPageFallback();
+        });
+    } else {
+        showTimeUpNotificationPageFallback();
+    }
+}
+
+function showTimeUpNotificationPageFallback() {
     try {
         var n = new Notification('Time\'s up!', { body: 'Focus session complete. Great focus!' });
-        n.onshow = function () { setTimeout(function () { n.close(); }, 5000); };
         n.onclick = function () { n.close(); window.focus(); };
+        setTimeout(function () { n.close(); }, 6000);
     } catch (e) { /* ignore */ }
 }
 
 function requestNotificationPermission() {
     if (typeof Notification === 'undefined') return;
     if (Notification.permission === 'default') {
-        Notification.requestPermission().catch(() => {});
+        Notification.requestPermission().catch(function () {});
     }
+}
+
+function registerServiceWorker() {
+    if (!('serviceWorker' in navigator)) return;
+    navigator.serviceWorker.register('sw.js', { scope: './' }).catch(function () {});
 }
 
 function completeDecryption() {
