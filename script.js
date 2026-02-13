@@ -512,6 +512,7 @@ function handleMissionSubmit(e) {
     missionName = value;
     updateMissionNameDisplay();
     handleMissionCancel(false);
+    requestNotificationPermission();
     startDecryption();
 }
 
@@ -638,6 +639,24 @@ function getRatingMultiplier(ratingValue) {
     return clamped / 3; // rating 3 keeps baseline distance, 5 amplifies reward
 }
 
+function showTimeUpNotification() {
+    if (typeof Notification === 'undefined') return;
+    if (Notification.permission === 'granted') {
+        const n = new Notification('Time\'s up!', {
+            body: 'Focus session complete. Great focus!',
+            icon: '49fc8801226d029dd021144d67bf8c85-removebg-preview.png'
+        });
+        n.onshow = () => { setTimeout(() => n.close(), 5000); };
+    }
+}
+
+function requestNotificationPermission() {
+    if (typeof Notification === 'undefined') return;
+    if (Notification.permission === 'default') {
+        Notification.requestPermission();
+    }
+}
+
 function completeDecryption() {
     if (timer) {
         clearInterval(timer);
@@ -646,6 +665,7 @@ function completeDecryption() {
     isRunning = false;
     sessionStartTimestamp = null;
     stopDecryptionStream();
+    showTimeUpNotification();
     const code = generateDecryptionCode();
     const baseDistance = getDistanceReward();
     pendingSession = { code, baseDistance };
