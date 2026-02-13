@@ -46,6 +46,7 @@ const STREAM_SUFFIXES = [
 // App State
 let progress = 0;
 let timer = null;
+let focusTimerWorker = null;
 let isRunning = false;
 let totalDistance = 0;
 let decryptionStreamTimer = null;
@@ -589,6 +590,13 @@ function updateUI() {
     updateTelemetry();
 }
 
+function terminateFocusTimerWorker() {
+    if (focusTimerWorker) {
+        focusTimerWorker.terminate();
+        focusTimerWorker = null;
+    }
+}
+
 // Start the decryption timer
 function startDecryption() {
     if (pendingSession) {
@@ -603,11 +611,23 @@ function startDecryption() {
     if (!sessionStartTimestamp) {
         sessionStartTimestamp = Date.now();
     } else {
-        // Resume from current progress if we ever support pauses.
         sessionStartTimestamp = Date.now() - (progress * 1000);
     }
 
-    // Start the timer
+    var endTime = sessionStartTimestamp + Math.max(1, focusDuration) * 1000;
+    try {
+        focusTimerWorker = new Worker('focus-timer-worker.js');
+        focusTimerWorker.onmessage = function (e) {
+            if (e.data && e.data.type === 'timeUp') {
+                terminateFocusTimerWorker();
+                completeDecryption();
+            }
+        };
+        focusTimerWorker.postMessage({ endTime: endTime });
+    } catch (err) {
+        focusTimerWorker = null;
+    }
+
     timer = setInterval(() => {
         const elapsedSeconds = Math.floor((Date.now() - sessionStartTimestamp) / 1000);
         if (elapsedSeconds !== progress) {
@@ -615,8 +635,6 @@ function startDecryption() {
             updateUI();
         }
         maybeAddDynamicLog();
-
-        // Check if session is complete
         if (progress >= Math.max(1, focusDuration)) {
             completeDecryption();
         }
@@ -639,23 +657,24 @@ function getRatingMultiplier(ratingValue) {
     return clamped / 3; // rating 3 keeps baseline distance, 5 amplifies reward
 }
 
+function showTimeUpInPageToast() {
+    var toast = document.getElementById('time-up-toast');
+    if (!toast) return;
+    toast.classList.add('visible');
+    setTimeout(function () {
+        toast.classList.remove('visible');
+    }, 4000);
+}
+
 function showTimeUpNotification() {
+    showTimeUpInPageToast();
     if (typeof Notification === 'undefined') return;
     if (Notification.permission !== 'granted') return;
     try {
-        const iconUrl = new URL('49fc8801226d029dd021144d67bf8c85-removebg-preview.png', window.location.href).href;
-        const n = new Notification('Time\'s up!', {
-            body: 'Focus session complete. Great focus!',
-            icon: iconUrl
-        });
-        n.onshow = () => { setTimeout(() => n.close(), 5000); };
-        n.onclick = () => { n.close(); window.focus(); };
-    } catch (err) {
-        try {
-            const n = new Notification('Time\'s up!', { body: 'Focus session complete. Great focus!' });
-            n.onshow = () => { setTimeout(() => n.close(), 5000); };
-        } catch (e) { /* ignore */ }
-    }
+        var n = new Notification('Time\'s up!', { body: 'Focus session complete. Great focus!' });
+        n.onshow = function () { setTimeout(function () { n.close(); }, 5000); };
+        n.onclick = function () { n.close(); window.focus(); };
+    } catch (e) { /* ignore */ }
 }
 
 function requestNotificationPermission() {
@@ -666,11 +685,13 @@ function requestNotificationPermission() {
 }
 
 function completeDecryption() {
+    if (!isRunning) return;
+    isRunning = false;
     if (timer) {
         clearInterval(timer);
         timer = null;
     }
-    isRunning = false;
+    terminateFocusTimerWorker();
     sessionStartTimestamp = null;
     stopDecryptionStream();
     showTimeUpNotification();
@@ -891,6 +912,7 @@ function loadStreak() {
 // Handle intrusion: apply penalty immediately, no form
 function handleIntrusion() {
     hideFullscreenFocus();
+    terminateFocusTimerWorker();
     addLogEntry('INTRUSION DETECTED.', 'error');
 
     progress = 0;
@@ -934,6 +956,7 @@ function hideFullscreenFocus() {
 
 function handleEndSession() {
     if (!isRunning) return;
+    terminateFocusTimerWorker();
     const duration = Math.max(1, focusDuration);
     const fullReward = getDistanceReward();
     const partialDistance = (progress / duration) * fullReward;
