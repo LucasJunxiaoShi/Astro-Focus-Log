@@ -490,6 +490,7 @@ function handleInitiateClick() {
         return;
     }
     if (isRunning) return;
+    requestNotificationPermission();
     openMissionModal();
 }
 
@@ -512,7 +513,6 @@ function handleMissionSubmit(e) {
     missionName = value;
     updateMissionNameDisplay();
     handleMissionCancel(false);
-    requestNotificationPermission();
     startDecryption();
 }
 
@@ -641,19 +641,27 @@ function getRatingMultiplier(ratingValue) {
 
 function showTimeUpNotification() {
     if (typeof Notification === 'undefined') return;
-    if (Notification.permission === 'granted') {
+    if (Notification.permission !== 'granted') return;
+    try {
+        const iconUrl = new URL('49fc8801226d029dd021144d67bf8c85-removebg-preview.png', window.location.href).href;
         const n = new Notification('Time\'s up!', {
             body: 'Focus session complete. Great focus!',
-            icon: '49fc8801226d029dd021144d67bf8c85-removebg-preview.png'
+            icon: iconUrl
         });
         n.onshow = () => { setTimeout(() => n.close(), 5000); };
+        n.onclick = () => { n.close(); window.focus(); };
+    } catch (err) {
+        try {
+            const n = new Notification('Time\'s up!', { body: 'Focus session complete. Great focus!' });
+            n.onshow = () => { setTimeout(() => n.close(), 5000); };
+        } catch (e) { /* ignore */ }
     }
 }
 
 function requestNotificationPermission() {
     if (typeof Notification === 'undefined') return;
     if (Notification.permission === 'default') {
-        Notification.requestPermission();
+        Notification.requestPermission().catch(() => {});
     }
 }
 
