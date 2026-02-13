@@ -6,10 +6,7 @@ let intrusionBtn;
 let distanceCounter;
 let milestoneText;
 let missionLog;
-let intrusionModal;
 let closeModals;
-let intrusionForm;
-let timestampInput;
 let decryptionOutput;
 let metricTotalSessions;
 let metricStreak;
@@ -32,6 +29,12 @@ let missionCancelBtn;
 let missionNameValue;
 let estimatedTimeContainer;
 let estimatedTimeDisplay;
+let focusFullscreen;
+let fullscreenTime;
+let fullscreenMissionName;
+let fullscreenDistanceSoFar;
+let fullscreenIntrusionBtn;
+let fullscreenEndBtn;
 const STREAM_SNIPPETS = [
     "SCAN", "DECODE", "VECTOR", "DELTA", "QUANT", "OMEGA", "NOVA", "SIGMA",
     "PHASE", "FREQ", "ALIGN", "SHIFT", "BYPASS", "LOCK", "TRACE", "RANGE"
@@ -84,7 +87,8 @@ const MILESTONES = [
     { distance: 12000, message: "Charting Alpha Centauri A & B..." },
     { distance: 20000, message: "Piercing the Local Interstellar Cloud..." },
     { distance: 40000, message: "Crossing deeper into the Orion Arm..." },
-    { distance: 100000, message: "Setting course toward the Galactic Center..." }
+    { distance: 100000, message: "Setting course toward the Galactic Center..." },
+    { distance: 1000000, message: "Entering M31's territory..."}
 ];
 
 function handleTodoSubmit() {
@@ -343,10 +347,7 @@ function cacheDomElements() {
     distanceCounter = document.getElementById('distance-counter');
     milestoneText = document.getElementById('milestone-text');
     missionLog = document.getElementById('mission-log');
-    intrusionModal = document.getElementById('intrusion-modal');
     closeModals = document.querySelectorAll('.close-modal');
-    intrusionForm = document.getElementById('intrusion-form');
-    timestampInput = document.getElementById('timestamp');
     decryptionOutput = document.getElementById('decryption-output');
     metricTotalSessions = document.getElementById('metric-total-sessions');
     metricStreak = document.getElementById('metric-streak');
@@ -369,6 +370,12 @@ function cacheDomElements() {
     missionNameValue = document.getElementById('mission-name-value');
     estimatedTimeContainer = document.getElementById('estimated-time-container');
     estimatedTimeDisplay = document.getElementById('estimated-time');
+    focusFullscreen = document.getElementById('focus-fullscreen');
+    fullscreenTime = document.getElementById('fullscreen-time');
+    fullscreenMissionName = document.getElementById('fullscreen-mission-name');
+    fullscreenDistanceSoFar = document.getElementById('fullscreen-distance-so-far');
+    fullscreenIntrusionBtn = document.getElementById('fullscreen-intrusion-btn');
+    fullscreenEndBtn = document.getElementById('fullscreen-end-btn');
 }
 
 function updateTelemetry() {
@@ -382,15 +389,18 @@ function updateTelemetry() {
 
 function init() {
     cacheDomElements();
-    // Set current timestamp for intrusion report
-    updateTimestamp();
-
     // Set up event listeners
     if (initiateBtn) {
         initiateBtn.addEventListener('click', handleInitiateClick);
     }
     if (intrusionBtn) {
-        intrusionBtn.addEventListener('click', showIntrusionModal);
+        intrusionBtn.addEventListener('click', handleIntrusion);
+    }
+    if (fullscreenIntrusionBtn) {
+        fullscreenIntrusionBtn.addEventListener('click', handleIntrusion);
+    }
+    if (fullscreenEndBtn) {
+        fullscreenEndBtn.addEventListener('click', handleEndSession);
     }
 
     if (todoAddBtn) {
@@ -425,7 +435,6 @@ function init() {
 
     // Close modals when clicking outside
     window.addEventListener('click', (e) => {
-        if (e.target === intrusionModal) intrusionModal.style.display = 'none';
         if (e.target === successModal) successModal.style.display = 'none';
         if (e.target === missionModal) handleMissionCancel();
     });
@@ -441,11 +450,6 @@ function init() {
     }
     if (missionForm) {
         missionForm.addEventListener('submit', handleMissionSubmit);
-    }
-
-    // Intrusion form submission
-    if (intrusionForm) {
-        intrusionForm.addEventListener('submit', logIntrusion);
     }
 
     if (focusDurationInput) {
@@ -558,8 +562,15 @@ function updateUI() {
         const remainingSeconds = Math.max(0, duration - progress);
         const minutes = Math.floor(remainingSeconds / 60);
         const seconds = Math.floor(remainingSeconds % 60);
-        estimatedTimeDisplay.textContent = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        const timeStr = `${minutes}:${seconds.toString().padStart(2, '0')}`;
+        estimatedTimeDisplay.textContent = timeStr;
         estimatedTimeContainer.style.display = 'block';
+        if (fullscreenTime) fullscreenTime.textContent = timeStr;
+        if (fullscreenDistanceSoFar) {
+            const fullReward = getDistanceReward();
+            const partialDistance = (progress / duration) * fullReward;
+            fullscreenDistanceSoFar.textContent = `+${partialDistance.toFixed(2)} M km`;
+        }
     } else if (!isRunning && estimatedTimeContainer) {
         estimatedTimeContainer.style.display = 'none';
     }
@@ -613,6 +624,7 @@ function startDecryption() {
     addLogEntry("INITIATING DECRYPTION SEQUENCE...", "success");
     addLogEntry("Focus mode activated. All non-essential systems offline.", "info");
     startDecryptionStream();
+    showFullscreenFocus();
 }
 
 // Complete the decryption
@@ -643,6 +655,7 @@ function completeDecryption() {
     if (estimatedTimeContainer) {
         estimatedTimeContainer.style.display = 'none';
     }
+    hideFullscreenFocus();
     if (ratingModal && ratingForm) {
         openRatingModal();
     } else {
@@ -847,31 +860,17 @@ function loadStreak() {
     }
 }
 
-// Show intrusion modal
-function showIntrusionModal() {
-    updateTimestamp();
-    if (intrusionForm) {
-        intrusionForm.reset();
-    }
-    if (intrusionModal) {
-        intrusionModal.style.display = 'flex';
-    }
-}
+// Handle intrusion: apply penalty immediately, no form
+function handleIntrusion() {
+    hideFullscreenFocus();
+    addLogEntry('INTRUSION DETECTED.', 'error');
 
-// Log an intrusion
-function logIntrusion(e) {
-    e.preventDefault();
-    
-    const source = document.getElementById('source').value;
-    const cause = document.getElementById('cause').value;
-    
-    // Add log entry
-    addLogEntry(`INTRUSION DETECTED! Source: ${source} - ${cause}`, "error");
-    
-    // Reset progress
     progress = 0;
     isRunning = false;
-    clearInterval(timer);
+    if (timer) {
+        clearInterval(timer);
+        timer = null;
+    }
     if (estimatedTimeContainer) {
         estimatedTimeContainer.style.display = 'none';
     }
@@ -882,22 +881,55 @@ function logIntrusion(e) {
         }
     }
     if (totalDistance > 0) {
-        const penalty = totalDistance * 0.1;
+        const penalty = totalDistance < 20 ? totalDistance * 0.05 : 2;
         totalDistance = Math.max(0, totalDistance - penalty);
         addLogEntry(`Security breach penalty applied: -${penalty.toFixed(2)} M km.`, 'warning');
     }
-    
-    // Close modal and reset UI
-    intrusionModal.style.display = 'none';
+
     initiateBtn.disabled = false;
     updateUI();
 }
 
-// Update the timestamp field
-function updateTimestamp() {
-    if (!timestampInput) return;
-    const now = new Date();
-    timestampInput.value = now.toISOString().replace('T', ' ').substring(0, 19);
+function showFullscreenFocus() {
+    if (!focusFullscreen) return;
+    if (fullscreenMissionName) fullscreenMissionName.textContent = missionName || 'Focus session';
+    focusFullscreen.style.display = 'flex';
+    focusFullscreen.setAttribute('aria-hidden', 'false');
+    updateUI();
+}
+
+function hideFullscreenFocus() {
+    if (!focusFullscreen) return;
+    focusFullscreen.style.display = 'none';
+    focusFullscreen.setAttribute('aria-hidden', 'true');
+}
+
+function handleEndSession() {
+    if (!isRunning) return;
+    const duration = Math.max(1, focusDuration);
+    const fullReward = getDistanceReward();
+    const partialDistance = (progress / duration) * fullReward;
+
+    if (timer) {
+        clearInterval(timer);
+        timer = null;
+    }
+    isRunning = false;
+    sessionStartTimestamp = null;
+    stopDecryptionStream();
+    const code = generateDecryptionCode();
+    pendingSession = { code, baseDistance: partialDistance };
+    addLogEntry(`Session ended early. Distance locked in: +${partialDistance.toFixed(2)} M km.`, 'info');
+    progress = 0;
+    if (estimatedTimeContainer) estimatedTimeContainer.style.display = 'none';
+    hideFullscreenFocus();
+    initiateBtn.disabled = false;
+    if (ratingModal && ratingForm) {
+        openRatingModal();
+    } else {
+        finalizeRatedSession(3);
+    }
+    updateUI();
 }
 
 // Add an entry to the mission log

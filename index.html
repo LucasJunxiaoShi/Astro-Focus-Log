@@ -108,6 +108,19 @@
         </div>
     </div>
 
+    <!-- Fullscreen Focus Mode -->
+    <div id="focus-fullscreen" class="focus-fullscreen" style="display: none;" aria-hidden="true">
+        <div class="focus-fullscreen-inner">
+            <div id="fullscreen-mission-name" class="focus-fullscreen-task"></div>
+            <div id="fullscreen-time" class="focus-fullscreen-time">--:--</div>
+            <div id="fullscreen-distance-so-far" class="focus-fullscreen-distance">+0.00 M km</div>
+            <div class="focus-fullscreen-actions">
+                <button type="button" id="fullscreen-intrusion-btn" class="btn btn-danger">// INTRUSION DETECTED</button>
+                <button type="button" id="fullscreen-end-btn" class="btn btn-primary">END SESSION</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Decryption Success Modal -->
     <div id="rating-modal" class="modal">
         <div class="modal-content">
@@ -164,37 +177,6 @@
                     <button type="button" class="btn btn-secondary" id="mission-cancel-btn">CANCEL</button>
                     <button type="submit" class="btn btn-primary">LOCK IN</button>
                 </div>
-            </form>
-        </div>
-    </div>
-
-    <!-- Intrusion Report Modal -->
-    <div id="intrusion-modal" class="modal">
-        <div class="modal-content">
-            <span class="close-modal" data-target="intrusion-modal">&times;</span>
-            <h2>// INTRUSION REPORT</h2>
-            <form id="intrusion-form">
-                <div class="form-group">
-                    <label for="timestamp">TIMESTAMP:</label>
-                    <input type="text" id="timestamp" readonly>
-                </div>
-                <div class="form-group">
-                    <label for="source">SOURCE:</label>
-                    <select id="source" required>
-                        <option value="">Select source</option>
-                        <option value="PHONE">Mobile Device</option>
-                        <option value="SOCIAL">Social Media</option>
-                        <option value="EMAIL">Email Client</option>
-                        <option value="PEOPLE">People</option>
-                        <option value="THOUGHTS">Internal Thoughts</option>
-                        <option value="OTHER">Other</option>
-                    </select>
-                </div>
-                <div class="form-group">
-                    <label for="cause">ROOT CAUSE VARIABLE:</label>
-                    <input type="text" id="cause" placeholder="What triggered this intrusion?" required>
-                </div>
-                <button type="submit" class="btn btn-danger">LOG INTRUSION</button>
             </form>
         </div>
     </div>

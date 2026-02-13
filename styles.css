@@ -504,6 +504,61 @@ p {
     gap: 4px;
 }
 
+/* Fullscreen Focus Mode */
+.focus-fullscreen {
+    position: fixed;
+    inset: 0;
+    z-index: 999;
+    background: rgba(10, 14, 20, 0.98);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+
+.focus-fullscreen-inner {
+    text-align: center;
+    max-width: 520px;
+    width: 100%;
+}
+
+.focus-fullscreen-task {
+    font-size: 1.25rem;
+    color: var(--accent-cyan);
+    letter-spacing: 1px;
+    margin-bottom: 24px;
+    word-break: break-word;
+}
+
+.focus-fullscreen-time {
+    font-size: clamp(4rem, 18vw, 8rem);
+    font-weight: bold;
+    color: var(--accent-green);
+    text-shadow: 0 0 30px rgba(186, 230, 126, 0.6);
+    font-family: 'Source Code Pro', monospace;
+    letter-spacing: 6px;
+    margin-bottom: 16px;
+    line-height: 1;
+}
+
+.focus-fullscreen-distance {
+    font-size: 1.25rem;
+    color: var(--accent-yellow);
+    margin-bottom: 40px;
+    letter-spacing: 1px;
+}
+
+.focus-fullscreen-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+    justify-content: center;
+}
+
+.focus-fullscreen-actions .btn {
+    min-width: 180px;
+}
+
 /* Modal */
 .modal {
     display: none;
